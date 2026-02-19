@@ -3,6 +3,7 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include "matmul.h"
+#include "random_utils.h"
 #include "catch2/catch_approx.hpp"
 
 TEST_CASE("MatMulCPU multiplies small matrices correctly") {
@@ -46,5 +47,26 @@ TEST_CASE("MatMulCPU handles identity matrix") {
 
     for (size_t i = 0; i < C.size(); ++i) {
         REQUIRE(C[i] == Catch::Approx(B[i]).margin(1e-5f));
+    }
+}
+
+TEST_CASE("MatMulGPU matches CPU for random data") {
+    const int sizes[] = {8, 17, 31};
+    for (int n: sizes) {
+        const size_t count = static_cast<size_t>(n) * n;
+        std::vector<float> A(count);
+        std::vector<float> B(count);
+        std::vector<float> C_cpu(count);
+        std::vector<float> C_gpu(count);
+
+        FillRandom(A, 1234 + n);
+        FillRandom(B, 5678 + n);
+
+        MatMulCPU(A.data(), B.data(), C_cpu.data(), n);
+        REQUIRE(MatMulGPU(A.data(), B.data(), C_gpu.data(), n));
+
+        for (size_t i = 0; i < count; ++i) {
+            REQUIRE(C_gpu[i] == Catch::Approx(C_cpu[i]).margin(1e-3f));
+        }
     }
 }
