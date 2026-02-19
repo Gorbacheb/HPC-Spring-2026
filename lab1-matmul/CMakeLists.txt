@@ -13,7 +13,10 @@ target_link_libraries(lab1_matmul_lib PUBLIC CUDA::cudart)
 if (TARGET hpc_common)
   target_link_libraries(lab1_matmul_lib PUBLIC hpc_common)
 endif()
-set_target_properties(lab1_matmul_lib PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+set_target_properties(lab1_matmul_lib PROPERTIES
+  CUDA_SEPARABLE_COMPILATION ON
+  CUDA_RESOLVE_DEVICE_SYMBOLS ON
+)
 
 add_executable(lab1_matmul src/main.cpp)
 target_link_libraries(lab1_matmul PRIVATE lab1_matmul_lib)

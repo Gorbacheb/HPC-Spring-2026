@@ -11,7 +11,7 @@
 #include "random_utils.h"
 
 int main() {
-    const std::vector<int> sizes = {128, 256, 512, 1024, 1 << 10, 1 << 11, 1 << 12, 1 << 13, 1 << 14};
+    const std::vector<int> sizes = {128, 256, 512, 1024, 1536, 1 << 11, 1 << 12, 1 << 13, 1 << 14};
     const std::vector<int> tiles = {8, 16, 32};
     const std::string csv_path = "../../lab1-matmul/lab1_matmul_results.csv";
 
@@ -40,7 +40,7 @@ int main() {
         FillRandom(A, 42u + n);
         FillRandom(B, 4242u + n);
 
-        const bool run_cpu = n <= 2048;
+        const bool run_cpu = n <= 1536;
         double cpu_ms = 0.0;
         if (run_cpu) {
             auto cpu_start = std::chrono::high_resolution_clock::now();
