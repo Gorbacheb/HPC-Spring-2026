@@ -79,4 +79,28 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(Catch2)
 
+# csv2 for CSV writing
+set(CSV2_GIT_TAG "master" CACHE STRING "csv2 git tag/commit")
+FetchContent_Declare(
+  csv2
+  GIT_REPOSITORY https://github.com/p-ranav/csv2.git
+  GIT_TAG ${CSV2_GIT_TAG}
+  GIT_SHALLOW TRUE
+)
+FetchContent_Populate(csv2)
+add_library(csv2 INTERFACE)
+add_library(csv2::csv2 ALIAS csv2)
+target_include_directories(csv2 INTERFACE ${csv2_SOURCE_DIR}/include)
+
+add_library(hpc_common INTERFACE)
+target_include_directories(hpc_common INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/common)
+target_link_libraries(hpc_common INTERFACE csv2::csv2)
+target_sources(hpc_common INTERFACE
+  ${CMAKE_CURRENT_SOURCE_DIR}/common/cuda_utils.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/common/csv_writer.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/common/format_utils.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/common/math_utils.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/common/random_utils.h
+)
+
 add_subdirectory(lab1-matmul)

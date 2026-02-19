@@ -10,6 +10,9 @@ add_library(lab1_matmul_lib
 target_include_directories(lab1_matmul_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_include_directories(lab1_matmul_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../common)
 target_link_libraries(lab1_matmul_lib PUBLIC CUDA::cudart)
+if (TARGET hpc_common)
+  target_link_libraries(lab1_matmul_lib PUBLIC hpc_common)
+endif()
 set_target_properties(lab1_matmul_lib PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
 add_executable(lab1_matmul src/main.cpp)

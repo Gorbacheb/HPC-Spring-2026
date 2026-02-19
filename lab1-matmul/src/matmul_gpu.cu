@@ -1,6 +1,8 @@
+#include <chrono>
 #include <cuda_runtime.h>
-#include "matmul.h"
+
 #include "cuda_utils.h"
+#include "matmul.h"
 
 constexpr int kTile = 16;
 
@@ -19,7 +21,9 @@ __global__ void MatMulKernel(const float *A, const float *B, float *C, int n) {
     C[row_offset + col] = sum;
 }
 
-bool MatMulGPU(const float *A, const float *B, float *C, int n) {
+bool MatMulGPU(const float *A, const float *B, float *C, int n, float *kernel_ms, float *total_ms) {
+    const auto total_start = std::chrono::high_resolution_clock::now();
+
     const size_t bytes = static_cast<size_t>(n) * n * sizeof(float);
     float *dA = nullptr;
     float *dB = nullptr;
@@ -32,17 +36,38 @@ bool MatMulGPU(const float *A, const float *B, float *C, int n) {
     CUDA_CHECK_RET(cudaMemcpy(dA, A, bytes, cudaMemcpyHostToDevice));
     CUDA_CHECK_RET(cudaMemcpy(dB, B, bytes, cudaMemcpyHostToDevice));
 
+    cudaEvent_t start = nullptr;
+    cudaEvent_t stop = nullptr;
+    CUDA_CHECK_RET(cudaEventCreate(&start));
+    CUDA_CHECK_RET(cudaEventCreate(&stop));
+
     const dim3 block(kTile, kTile);
     const dim3 grid((n + kTile - 1) / kTile, (n + kTile - 1) / kTile);
-    MatMulKernel<<<grid, block>>>(dA, dB, dC, n);
 
+    CUDA_CHECK_RET(cudaEventRecord(start));
+    MatMulKernel<<<grid, block>>>(dA, dB, dC, n);
+    CUDA_CHECK_RET(cudaEventRecord(stop));
+    CUDA_CHECK_RET(cudaEventSynchronize(stop));
     CUDA_CHECK_RET(cudaGetLastError());
-    CUDA_CHECK_RET(cudaDeviceSynchronize());
+
+    float elapsed_ms = 0.0f;
+    CUDA_CHECK_RET(cudaEventElapsedTime(&elapsed_ms, start, stop));
+    if (kernel_ms) {
+        *kernel_ms = elapsed_ms;
+    }
 
     CUDA_CHECK_RET(cudaMemcpy(C, dC, bytes, cudaMemcpyDeviceToHost));
 
-    cudaFree(dA);
-    cudaFree(dB);
-    cudaFree(dC);
+    CUDA_CHECK_RET(cudaEventDestroy(start));
+    CUDA_CHECK_RET(cudaEventDestroy(stop));
+    CUDA_CHECK_RET(cudaFree(dA));
+    CUDA_CHECK_RET(cudaFree(dB));
+    CUDA_CHECK_RET(cudaFree(dC));
+
+    const auto total_end = std::chrono::high_resolution_clock::now();
+    if (total_ms) {
+        *total_ms = std::chrono::duration<double, std::milli>(total_end - total_start).count();
+    }
+
     return true;
 }

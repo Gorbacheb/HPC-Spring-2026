@@ -63,7 +63,7 @@ TEST_CASE("MatMulGPU matches CPU for random data") {
         FillRandom(B, 5678 + n);
 
         MatMulCPU(A.data(), B.data(), C_cpu.data(), n);
-        REQUIRE(MatMulGPU(A.data(), B.data(), C_gpu.data(), n));
+        REQUIRE(MatMulGPU(A.data(), B.data(), C_gpu.data(), n, nullptr, nullptr));
 
         for (size_t i = 0; i < count; ++i) {
             REQUIRE(C_gpu[i] == Catch::Approx(C_cpu[i]).margin(1e-3f));
