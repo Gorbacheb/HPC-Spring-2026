@@ -4,11 +4,9 @@
 #include "cuda_utils.h"
 #include "matmul.h"
 
-constexpr int kTile = 16;
-
-__global__ void MatMulKernel(const float *A, const float *B, float *C, int n) {
-    const int row = blockIdx.y * kTile + threadIdx.y;
-    const int col = blockIdx.x * kTile + threadIdx.x;
+__global__ void MatMulKernelGlobal(const float *A, const float *B, float *C, int n) {
+    const int row = blockIdx.y * blockDim.y + threadIdx.y;
+    const int col = blockIdx.x * blockDim.x + threadIdx.x;
     if (row >= n || col >= n) {
         return;
     }
@@ -21,7 +19,13 @@ __global__ void MatMulKernel(const float *A, const float *B, float *C, int n) {
     C[row_offset + col] = sum;
 }
 
-bool MatMulGPU(const float *A, const float *B, float *C, int n, float *kernel_ms, float *total_ms) {
+bool MatMulGPU(const float *A,
+               const float *B,
+               float *C,
+               int n,
+               float *kernel_ms,
+               float *total_ms,
+               int tile) {
     const auto total_start = std::chrono::high_resolution_clock::now();
 
     const size_t bytes = static_cast<size_t>(n) * n * sizeof(float);
@@ -41,11 +45,11 @@ bool MatMulGPU(const float *A, const float *B, float *C, int n, float *kernel_ms
     CUDA_CHECK_RET(cudaEventCreate(&start));
     CUDA_CHECK_RET(cudaEventCreate(&stop));
 
-    const dim3 block(kTile, kTile);
-    const dim3 grid((n + kTile - 1) / kTile, (n + kTile - 1) / kTile);
+    const dim3 block(tile, tile);
+    const dim3 grid((n + tile - 1) / tile, (n + tile - 1) / tile);
 
     CUDA_CHECK_RET(cudaEventRecord(start));
-    MatMulKernel<<<grid, block>>>(dA, dB, dC, n);
+    MatMulKernelGlobal<<<grid, block>>>(dA, dB, dC, n);
     CUDA_CHECK_RET(cudaEventRecord(stop));
     CUDA_CHECK_RET(cudaEventSynchronize(stop));
     CUDA_CHECK_RET(cudaGetLastError());

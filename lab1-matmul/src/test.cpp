@@ -52,6 +52,7 @@ TEST_CASE("MatMulCPU handles identity matrix") {
 
 TEST_CASE("MatMulGPU matches CPU for random data") {
     const int sizes[] = {8, 17, 31};
+    const int tiles[] = {8, 16, 32};
     for (int n: sizes) {
         const size_t count = static_cast<size_t>(n) * n;
         std::vector<float> A(count);
@@ -63,10 +64,11 @@ TEST_CASE("MatMulGPU matches CPU for random data") {
         FillRandom(B, 5678 + n);
 
         MatMulCPU(A.data(), B.data(), C_cpu.data(), n);
-        REQUIRE(MatMulGPU(A.data(), B.data(), C_gpu.data(), n, nullptr, nullptr));
-
-        for (size_t i = 0; i < count; ++i) {
-            REQUIRE(C_gpu[i] == Catch::Approx(C_cpu[i]).margin(1e-3f));
+        for (int tile: tiles) {
+            REQUIRE(MatMulGPU(A.data(), B.data(), C_gpu.data(), n, nullptr, nullptr, tile));
+            for (size_t i = 0; i < count; ++i) {
+                REQUIRE(C_gpu[i] == Catch::Approx(C_cpu[i]).margin(1e-3f));
+            }
         }
     }
 }
