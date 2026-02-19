@@ -16,7 +16,19 @@ int main() {
     const std::string csv_path = "../../lab1-matmul/lab1_matmul_results.csv";
 
     std::vector<std::vector<std::string>> csv_rows;
-    csv_rows.push_back({"size", "tile", "cpu_ms", "gpu_kernel_ms", "gpu_total_ms", "speedup_kernel", "max_abs_error"});
+    csv_rows.push_back({
+        "size",
+        "tile",
+        "cpu_ms",
+        "gpu_shared_kernel_ms",
+        "gpu_shared_total_ms",
+        "gpu_global_kernel_ms",
+        "gpu_global_total_ms",
+        "speedup_shared_kernel",
+        "speedup_global_kernel",
+        "max_abs_error_shared",
+        "max_abs_error_global"
+    });
 
     for (int n: sizes) {
         const size_t count = static_cast<size_t>(n) * n;
@@ -38,33 +50,57 @@ int main() {
         }
 
         for (int tile: tiles) {
-            float gpu_kernel_ms = 0.0f;
-            float gpu_total_ms = 0.0f;
-            if (!MatMulGPU(A.data(), B.data(), C_gpu.data(), n, &gpu_kernel_ms, &gpu_total_ms, tile)) {
-                std::cerr << "GPU computation failed for N=" << n << " tile=" << tile << "\n";
+            float shared_kernel_ms = 0.0f;
+            float shared_total_ms = 0.0f;
+            if (!MatMulGPU(A.data(), B.data(), C_gpu.data(), n, &shared_kernel_ms, &shared_total_ms, tile)) {
+                std::cerr << "GPU shared computation failed for N=" << n << " tile=" << tile << "\n";
                 return 1;
             }
 
-            const float max_diff = run_cpu ? MaxAbsDiff(C_cpu, C_gpu) : 0.0f;
-            const double speedup = run_cpu ? (cpu_ms / static_cast<double>(gpu_kernel_ms)) : 0.0;
+            float max_diff_shared;
+            double speedup_shared;
+            if (run_cpu) {
+                max_diff_shared = MaxAbsDiff(C_cpu, C_gpu);
+                speedup_shared = cpu_ms / static_cast<double>(shared_kernel_ms);
+            }
+
+            float global_kernel_ms = 0.0f;
+            float global_total_ms = 0.0f;
+            if (!MatMulGPU_Global(A.data(), B.data(), C_gpu.data(), n, &global_kernel_ms, &global_total_ms, tile)) {
+                std::cerr << "GPU global computation failed for N=" << n << " tile=" << tile << "\n";
+                return 1;
+            }
+
+            float max_diff_global;
+            double speedup_global;
+            if (run_cpu) {
+                max_diff_global = MaxAbsDiff(C_cpu, C_gpu);
+                speedup_global = cpu_ms / static_cast<double>(global_kernel_ms);
+            }
 
             std::cout << "N=" << n
                       << " TILE=" << tile
                       << " CPU=" << (run_cpu ? ToString(cpu_ms) : std::string("NA")) << " ms"
-                      << " GPU(kernel)=" << ToString(gpu_kernel_ms) << " ms"
-                      << " GPU(total)=" << ToString(gpu_total_ms) << " ms"
-                      << " speedup=" << (run_cpu ? ToString(speedup) : std::string("NA"))
-                      << " max_diff=" << (run_cpu ? ToString(max_diff) : std::string("NA"))
+                      << " GPU(shared)=" << ToString(shared_kernel_ms) << " ms"
+                      << " GPU(global)=" << ToString(global_kernel_ms) << " ms"
+                      << " speedup_shared=" << (run_cpu ? ToString(speedup_shared) : std::string("NA"))
+                      << " speedup_global=" << (run_cpu ? ToString(speedup_global) : std::string("NA"))
+                      << " max_diff_shared=" << (run_cpu ? ToString(max_diff_shared) : std::string("NA"))
+                      << " max_diff_global=" << (run_cpu ? ToString(max_diff_global) : std::string("NA"))
                       << "\n";
 
             csv_rows.push_back({
-               std::to_string(n),
-               std::to_string(tile),
-               run_cpu ? ToString(cpu_ms) : "NA",
-               ToString(gpu_kernel_ms),
-               ToString(gpu_total_ms),
-               run_cpu ? ToString(speedup) : "NA",
-               run_cpu ? ToString(max_diff) : "NA"
+                std::to_string(n),
+                std::to_string(tile),
+                run_cpu ? ToString(cpu_ms) : "NA",
+                ToString(shared_kernel_ms),
+                ToString(shared_total_ms),
+                ToString(global_kernel_ms),
+                ToString(global_total_ms),
+                run_cpu ? ToString(speedup_shared) : "NA",
+                run_cpu ? ToString(speedup_global) : "NA",
+                run_cpu ? ToString(max_diff_shared) : "NA",
+                run_cpu ? ToString(max_diff_global) : "NA"
             });
         }
     }

@@ -9,3 +9,11 @@ bool MatMulGPU(const float *A,
                float *kernel_ms,
                float *total_ms,
                int tile = 16);
+
+bool MatMulGPU_Global(const float *A,
+                      const float *B,
+                      float *C,
+                      int n,
+                      float *kernel_ms,
+                      float *total_ms,
+                      int tile = 16);
