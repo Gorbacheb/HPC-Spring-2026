@@ -1,0 +1,46 @@
+# Build artifacts
+/build/
+build*/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+*.ninja
+.ninja_*
+compile_commands.json
+
+# Binaries & objects
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.so.*
+*.dylib
+*.dll
+*.exe
+*.out
+*.app
+*.pdb
+*.ilk
+*.dSYM/
+
+# CUDA artifacts
+*.ptx
+*.cubin
+*.fatbin
+*.fatbin.c
+
+# IDE
+.idea/
+.vscode/
+.vs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local archives (not part of source history)
+/archive/
+/arhive/
