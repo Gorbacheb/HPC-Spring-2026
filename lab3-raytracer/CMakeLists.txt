@@ -1,0 +1,20 @@
+project(lab3_raytracer LANGUAGES CXX CUDA)
+
+find_package(CUDAToolkit REQUIRED)
+
+add_executable(lab3_raytracer src/main.cpp)
+target_include_directories(lab3_raytracer PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(lab3_raytracer PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../common)
+target_link_libraries(lab3_raytracer PRIVATE CUDA::cudart)
+if (TARGET hpc_common)
+  target_link_libraries(lab3_raytracer PRIVATE hpc_common)
+endif()
+
+add_executable(lab3_raytracer_test src/test.cpp)
+target_include_directories(lab3_raytracer_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(lab3_raytracer_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../common)
+target_link_libraries(lab3_raytracer_test PRIVATE CUDA::cudart Catch2::Catch2WithMain)
+if (TARGET hpc_common)
+  target_link_libraries(lab3_raytracer_test PRIVATE hpc_common)
+endif()
+add_test(NAME lab3_raytracer_test COMMAND lab3_raytracer_test)

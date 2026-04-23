@@ -105,3 +105,4 @@ target_sources(hpc_common INTERFACE
 
 add_subdirectory(lab1-matmul)
 add_subdirectory(lab2-vectorsum)
+add_subdirectory(lab3-raytracer)
