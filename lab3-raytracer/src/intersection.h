@@ -4,18 +4,18 @@
 
 class Intersection {
 public:
-    Intersection() : distance_(0.0), position_(0.0, 0.0, 0.0) {
+    __host__ __device__ Intersection() : distance_(0.0), position_(0.0, 0.0, 0.0) {
     }
 
-    Intersection(double distance, const Vector& position)
+    __host__ __device__ Intersection(double distance, const Vector& position)
         : distance_(distance), position_(position) {
     }
 
-    [[nodiscard]] double GetDistance() const {
+    [[nodiscard]] __host__ __device__ double GetDistance() const {
         return distance_;
     }
 
-    [[nodiscard]] const Vector& GetPosition() const {
+    [[nodiscard]] __host__ __device__ const Vector& GetPosition() const {
         return position_;
     }
 

@@ -32,7 +32,7 @@ public:
         scale_ = std::tan(options.fov * 0.5);
     }
 
-    [[nodiscard]] Ray GenerateRay(int x, int y) const {
+    [[nodiscard]] __host__ __device__ Ray GenerateRay(int x, int y) const {
         // https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-generating-camera-rays/generating-camera-rays.html
 
         double px = (2.0 * (x + 0.5) / width_ - 1.0) * aspect_ * scale_;
@@ -44,11 +44,11 @@ public:
         return {origin_, dir};
     }
 
-    [[nodiscard]] int Width() const {
+    [[nodiscard]] __host__ __device__ int Width() const {
         return width_;
     }
 
-    [[nodiscard]] int Height() const {
+    [[nodiscard]] __host__ __device__ int Height() const {
         return height_;
     }
 
