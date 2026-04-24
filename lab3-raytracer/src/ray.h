@@ -4,7 +4,7 @@
 
 class Ray {
 public:
-    __host__ __device__ Ray() = default;
+    Ray() = default;
 
     __host__ __device__ Ray(const Vector& origin, const Vector& direction) : origin_(origin), direction_(direction) {
         direction_.Normalize();
