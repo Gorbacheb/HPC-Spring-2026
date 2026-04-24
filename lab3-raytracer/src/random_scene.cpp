@@ -110,6 +110,8 @@ Material MakeMaterial(const std::vector<double>& samples, size_t* cursor) {
 
 }  // namespace
 
+// todo по-хорошему стоило бы сразу сгенерировать сцену на девайсе чтобы не таскать память на хост и
+// обратно, но это ломает текущее апи
 Scene GenerateRandomScene() {
     auto kSeed = std::random_device{}();
     const std::vector<double> samples = GenerateUniformSamples(1024U, kSeed);

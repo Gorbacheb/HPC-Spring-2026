@@ -1,8 +1,12 @@
+#include <algorithm>
+#include <cmath>
+
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
 #include "camera.h"
 #include "geometry.h"
+#include "random_scene.h"
 #include "scene.h"
 
 namespace {
@@ -100,11 +104,7 @@ TEST_CASE("Sphere intersection from inside returns forward exit", "[lab3][geomet
 }
 
 TEST_CASE("Triangle intersection works", "[lab3][geometry]") {
-    const Triangle tri(
-        Vector(-1.0, -1.0, -3.0),
-        Vector(1.0, -1.0, -3.0),
-        Vector(0.0, 1.0, -3.0)
-    );
+    const Triangle tri(Vector(-1.0, -1.0, -3.0), Vector(1.0, -1.0, -3.0), Vector(0.0, 1.0, -3.0));
     const Ray ray(Vector(0.0, 0.0, 0.0), Vector(0.0, 0.0, -1.0));
 
     const auto hit = GetIntersection(ray, tri);
@@ -116,11 +116,7 @@ TEST_CASE("Triangle intersection works", "[lab3][geometry]") {
 }
 
 TEST_CASE("Triangle intersection misses outside barycentric area", "[lab3][geometry]") {
-    const Triangle tri(
-        Vector(-1.0, -1.0, -3.0),
-        Vector(1.0, -1.0, -3.0),
-        Vector(0.0, 1.0, -3.0)
-    );
+    const Triangle tri(Vector(-1.0, -1.0, -3.0), Vector(1.0, -1.0, -3.0), Vector(0.0, 1.0, -3.0));
     const Ray ray(Vector(2.0, 0.0, 0.0), Vector(0.0, 0.0, -1.0));
 
     const auto hit = GetIntersection(ray, tri);
@@ -128,11 +124,7 @@ TEST_CASE("Triangle intersection misses outside barycentric area", "[lab3][geome
 }
 
 TEST_CASE("Triangle normal is unit and stable", "[lab3][geometry]") {
-    const Triangle tri(
-        Vector(-1.0, -1.0, -3.0),
-        Vector(1.0, -1.0, -3.0),
-        Vector(0.0, 1.0, -3.0)
-    );
+    const Triangle tri(Vector(-1.0, -1.0, -3.0), Vector(1.0, -1.0, -3.0), Vector(0.0, 1.0, -3.0));
     const Ray ray(Vector(0.0, 0.0, 0.0), Vector(0.0, 0.0, -1.0));
     const auto hit = GetIntersection(ray, tri);
     REQUIRE(hit.has_value());
@@ -144,11 +136,7 @@ TEST_CASE("Triangle normal is unit and stable", "[lab3][geometry]") {
 }
 
 TEST_CASE("Triangle intersection misses for ray parallel to plane", "[lab3][geometry]") {
-    const Triangle tri(
-        Vector(-1.0, -1.0, -3.0),
-        Vector(1.0, -1.0, -3.0),
-        Vector(0.0, 1.0, -3.0)
-    );
+    const Triangle tri(Vector(-1.0, -1.0, -3.0), Vector(1.0, -1.0, -3.0), Vector(0.0, 1.0, -3.0));
     const Ray ray(Vector(0.0, 0.0, 0.0), Vector(1.0, 0.0, 0.0));
 
     const auto hit = GetIntersection(ray, tri);
@@ -168,16 +156,22 @@ TEST_CASE("Scene stores objects, materials and lights coherently", "[lab3][scene
 
     scene.AddSphere(Sphere(Vector(0.0, 0.0, -5.0), 1.0), red_id);
     scene.AddTriangle(
-        Triangle(
-            Vector(-1.0, -1.0, -3.0),
-            Vector(1.0, -1.0, -3.0),
-            Vector(0.0, 1.0, -3.0)
-        ),
-        green_id
-    );
+        Triangle(Vector(-1.0, -1.0, -3.0), Vector(1.0, -1.0, -3.0), Vector(0.0, 1.0, -3.0)),
+        green_id);
     scene.AddLight(Light(Vector(1.0, 2.0, 3.0), Vector(1.0, 1.0, 1.0)));
 
     REQUIRE(scene.GetSphereObjects().size() == 1);
     REQUIRE(scene.GetTriangleObjects().size() == 1);
     REQUIRE(scene.GetLights().size() == 1);
+
+    REQUIRE(scene.GetSphereObjects()[0].material_id == red_id);
+    REQUIRE(scene.GetTriangleObjects()[0].material_id == green_id);
+}
+
+TEST_CASE("Random scene generator creates a lit scene", "[lab3][scene][random]") {
+    const Scene scene = GenerateRandomScene();
+
+    REQUIRE(scene.GetMaterials().size() >= 4);
+    REQUIRE(scene.GetSphereObjects().size() >= 4);
+    REQUIRE(scene.GetLights().size() >= 2);
 }
