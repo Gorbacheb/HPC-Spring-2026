@@ -13,6 +13,7 @@ compile_commands.json
 # Binaries & objects
 *.o
 *.obj
+!/lab3-raytracer/scenes/showcase/showcase.obj
 *.a
 *.lib
 *.so
