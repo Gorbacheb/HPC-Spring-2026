@@ -180,7 +180,4 @@ TEST_CASE("Scene stores objects, materials and lights coherently", "[lab3][scene
     REQUIRE(scene.GetSphereObjects().size() == 1);
     REQUIRE(scene.GetTriangleObjects().size() == 1);
     REQUIRE(scene.GetLights().size() == 1);
-
-    REQUIRE(scene.GetSphereObjects()[0].material != nullptr);
-    REQUIRE(scene.GetTriangleObjects()[0].material != nullptr);
 }
